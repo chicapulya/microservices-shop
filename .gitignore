@@ -1,0 +1,73 @@
+# -------------------------------------------------------------------------
+# 1. Сгенерированные файлы Python: .pyc, .pyo, .pyd, кэш
+# -------------------------------------------------------------------------
+
+# Python cache directories
+__pycache__/
+
+# Compiled files: .pyc, .pyo
+*.py[cod]
+*$py.class
+
+# Dynamically loaded extensions (e.g., C extensions)
+*.so
+*.pyd
+
+# -------------------------------------------------------------------------
+# 2. Артефакты сборки и дистрибуции
+# -------------------------------------------------------------------------
+
+# Build and distribution directories/files
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Directories for compiled extensions (may be used by certain build systems)
+lib/
+lib64/
+parts/
+var/
+
+# Virtual environment files (often named 'venv', '.venv', 'env')
+# If you create a virtual environment inside the project folder
+venv/
+.venv/
+env/
+.env/
+
+# -------------------------------------------------------------------------
+# 3. Файлы среды выполнения и конфигурации (частые дополнения)
+# -------------------------------------------------------------------------
+
+# Файлы, специфичные для операционных систем (например, macOS)
+.DS_Store
+.Trashes
+Thumbs.db
+
+# Файлы, специфичные для IDE (например, VS Code, PyCharm)
+# Visual Studio Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Файлы конфигурации и секретов (приватные данные)
+# Всегда игнорируйте файлы с секретными данными или паролями!
+*.env
+.flaskenv
+config.local.py
+.secret
+secrets.json
+
+# Логи и временные файлы
+*.log
+tmp/
