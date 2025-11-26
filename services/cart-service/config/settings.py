@@ -22,7 +22,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.products',
+    'apps.cart',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -60,7 +60,7 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / 'databases' / 'product.db',
+        'NAME': BASE_DIR.parent.parent / 'databases' / 'cart.db',
     }
 }
 
@@ -91,6 +91,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Service URLs
+PRODUCT_SERVICE_URL = 'http://localhost:8001'
+USER_SERVICE_URL = 'http://localhost:8004'
 
 # Redis настройки
 REDIS_HOST = 'localhost'
