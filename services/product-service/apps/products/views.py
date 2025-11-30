@@ -33,27 +33,26 @@ class ProductListView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        # Фильтр по цене
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
+        in_stock = self.request.query_params.get('in_stock')
 
-        if min_price:
+        if min_price is not None:
             queryset = queryset.filter(price__gte=min_price)
-
-        if max_price:
+        if max_price is not None:
             queryset = queryset.filter(price__lte=max_price)
-
-        # Фильтр по наличию
-            in_stock = self.request.query_params.get('in_stock')
-            if in_stock and in_stock.lower() == 'true':
+        if in_stock is not None:
+            if str(in_stock).lower() in ('true', '1', 'yes'):
                 queryset = queryset.filter(stock_quantity__gt=0)
+            elif str(in_stock).lower() in ('false', '0', 'no'):
+                pass  # можно ничего не фильтровать или фильтровать по нулю
 
-            return queryset
+        return queryset
 
-        def get_serializer_class(self):
-            if self.request.method == 'POST':
-                return ProductCreateUpdateSerializer
-            return ProductSerializer
+    def get_serializer_class(self):
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            return ProductCreateUpdateSerializer
+        return ProductSerializer
         
 class ProductDetailView(generics.RetrieveAPIView):
     queryset = Product.objects.all()

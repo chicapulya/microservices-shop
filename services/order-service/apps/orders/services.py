@@ -100,23 +100,24 @@ class ProductService:
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to release products: {e}")
 
-from django.db import models
-from decimal import Decimal
+class UserService:
+    """Сервис для взаимодействия с User Service"""
 
-class Order(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
-    ]
+    @staticmethod
+    def get_user_from_token(token: str) -> Optional[Dict[str, Any]]:
+        """Получение информации о пользователе по токену"""
+        try:
+            headers = {'Authorization': f'Bearer {token}'}
+            response = requests.get(
+                f"{settings.USER_SERVICE_URL}/api/users/profile/",
+                headers=headers,
+                timeout=10
+            )
 
-    user_id = models.IntegerField()  # ID пользователя из user-service
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    shipping_address = models.TextField()
-    user_email = models.EmailField(blank=True)  # Кэш email пользователя
-    user_name = models.CharField(max_length=200, blank=True)  # Кэш имени
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+            if response.status_code == 200:
+                return response.json()
+
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to get user from token: {e}")
+            return None
