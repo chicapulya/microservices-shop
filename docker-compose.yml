@@ -1,0 +1,297 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: shop-postgres
+    environment:
+      - POSTGRES_USER=shop_user
+      - POSTGRES_PASSWORD=shop_password
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./databases/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+    networks:
+      - shop-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop_user -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis для event bus и кеширования
+  redis:
+    image: redis:7-alpine
+    container_name: shop-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - shop-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # User Service
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: shop-user-service
+    ports:
+      - "8004:8004"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=user_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - shop-network
+    volumes:
+      - ./services/user-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8004"
+
+  # Product Service
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: shop-product-service
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DISCOUNT_SERVICE_URL=http://discount-service:8005
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=product_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - shop-network
+    volumes:
+      - ./services/product-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8001"
+
+  # Cart Service
+  cart-service:
+    build:
+      context: ./services/cart-service
+      dockerfile: Dockerfile
+    container_name: shop-cart-service
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - PRODUCT_SERVICE_URL=http://product-service:8001
+      - USER_SERVICE_URL=http://user-service:8004
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=cart_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+    networks:
+      - shop-network
+    volumes:
+      - ./services/cart-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8002"
+
+  # Order Service
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: shop-order-service
+    ports:
+      - "8003:8003"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - PRODUCT_SERVICE_URL=http://product-service:8001
+      - CART_SERVICE_URL=http://cart-service:8002
+      - USER_SERVICE_URL=http://user-service:8004
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=order_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+      cart-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+    networks:
+      - shop-network
+    volumes:
+      - ./services/order-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8003"
+
+  # Discount Service
+  discount-service:
+    build:
+      context: ./services/discount-service
+      dockerfile: Dockerfile
+    container_name: shop-discount-service
+    ports:
+      - "8005:8005"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - PRODUCT_SERVICE_URL=http://product-service:8001
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=discount_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_started
+    networks:
+      - shop-network
+    volumes:
+      - ./services/discount-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8005"
+
+  # Currency Service
+  currency-service:
+    build:
+      context: ./services/currency-service
+      dockerfile: Dockerfile
+    container_name: shop-currency-service
+    ports:
+      - "8006:8006"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DATABASE_ENGINE=postgresql
+      - DATABASE_NAME=currency_db
+      - DATABASE_USER=shop_user
+      - DATABASE_PASSWORD=shop_password
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - shop-network
+    volumes:
+      - ./services/currency-service:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8006"
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: shop-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - USER_SERVICE_URL=http://user-service:8004
+      - PRODUCT_SERVICE_URL=http://product-service:8001
+      - CART_SERVICE_URL=http://cart-service:8002
+      - ORDER_SERVICE_URL=http://order-service:8003
+      - DISCOUNT_SERVICE_URL=http://discount-service:8005
+      - CURRENCY_SERVICE_URL=http://currency-service:8006
+    depends_on:
+      - redis
+      - user-service
+      - product-service
+      - cart-service
+      - order-service
+      - discount-service
+    networks:
+      - shop-network
+    volumes:
+      - ./api-gateway:/app
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shop-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://api-gateway:8000
+    depends_on:
+      - api-gateway
+    networks:
+      - shop-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+networks:
+  shop-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

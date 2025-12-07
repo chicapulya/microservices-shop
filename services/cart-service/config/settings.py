@@ -3,9 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'product-service-secret-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cart-service-secret-key-change-in-production')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'cart-service', '*']
 
 DJANGO_APPS = [
      'django.contrib.admin',
@@ -18,7 +18,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
-    'django_filters',
 ]
 
 LOCAL_APPS = [
@@ -59,8 +58,12 @@ TEMPLATES = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / 'databases' / 'cart.db',
+        'ENGINE': 'django.db.backends.postgresql' if os.environ.get('DATABASE_ENGINE') == 'postgresql' else 'django.db.backends.sqlite3',
+        'NAME': os.environ.get('DATABASE_NAME', '/app/db/cart.db'),
+        'USER': os.environ.get('DATABASE_USER', ''),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
+        'HOST': os.environ.get('DATABASE_HOST', ''),
+        'PORT': os.environ.get('DATABASE_PORT', ''),
     }
 }
 
@@ -93,10 +96,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Service URLs
-PRODUCT_SERVICE_URL = 'http://localhost:8001'
-USER_SERVICE_URL = 'http://localhost:8004'
+PRODUCT_SERVICE_URL = os.environ.get('PRODUCT_SERVICE_URL', 'http://localhost:8001')
+USER_SERVICE_URL = os.environ.get('USER_SERVICE_URL', 'http://localhost:8004')
 
 # Redis настройки
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
 REDIS_DB = 0

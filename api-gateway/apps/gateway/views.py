@@ -53,6 +53,10 @@ class ProxyView(View):
             return 'cart-service'
         elif path.startswith('/api/orders/'):
             return 'order-service'
+        elif path.startswith('/api/discounts/'):
+            return 'discount-service'
+        elif path.startswith('/api/currency/'):
+            return 'currency-service'
 
         return None
 

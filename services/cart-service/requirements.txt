@@ -11,12 +11,14 @@ click-repl==0.3.0
 dj-database-url==2.1.0
 Django==5.2.5
 django-cors-headers==4.3.1
+django-filter==25.2
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 idna==3.10
 kombu==5.3.4
 prompt_toolkit==3.0.52
 PyJWT==2.10.1
+psycopg2-binary==2.9.9
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 pytz==2024.2

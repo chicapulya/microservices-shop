@@ -56,6 +56,9 @@
             Auth: {{ isAuthenticated ? 'Yes' : 'No' }} | Token: {{ hasToken ? 'Yes' : 'No' }}
           </div>
 
+          <!-- Currency Selector -->
+          <CurrencySelectorCompact />
+
           <!-- Cart Icon -->
           <router-link
             to="/cart"
@@ -206,6 +209,11 @@
               >
             </div>
 
+            <!-- Mobile Currency Selector -->
+            <div class="px-3 py-2">
+              <CurrencySelectorCompact />
+            </div>
+
             <!-- Mobile Cart Link -->
             <router-link
               to="/cart"
@@ -264,9 +272,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../store/auth'
 import { useCartStore } from '../../store/cart'
+import CurrencySelectorCompact from '../common/CurrencySelectorCompact.vue'
 
 export default {
   name: 'AppHeader',
+  components: {
+    CurrencySelectorCompact
+  },
   setup() {
     const router = useRouter()
     const authStore = useAuthStore()

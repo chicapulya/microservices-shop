@@ -15,6 +15,13 @@
         </span>
       </div>
 
+      <!-- Discount Badge -->
+      <div v-if="product.has_discount" class="absolute top-2 right-2">
+        <span class="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full shadow-lg">
+          -{{ product.discount_percentage }}%
+        </span>
+      </div>
+
       <!-- Quick Actions -->
       <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
         <div class="space-x-2">
@@ -71,7 +78,13 @@
       <!-- Price and Stock -->
       <div class="flex items-center justify-between">
         <div>
-          <span class="text-xl font-bold text-black">${{ formatPrice(product.price) }}</span>
+          <!-- Цена со скидкой -->
+          <div v-if="product.has_discount" class="flex flex-col">
+            <span class="text-sm text-gray-400 line-through">{{ currencySymbol }}{{ convertedPrice(product.price) }}</span>
+            <span class="text-xl font-bold text-red-600">{{ currencySymbol }}{{ convertedPrice(product.discounted_price) }}</span>
+          </div>
+          <!-- Обычная цена -->
+          <span v-else class="text-xl font-bold text-black">{{ currencySymbol }}{{ convertedPrice(product.price) }}</span>
         </div>
         <div class="text-sm text-gray-500">
           {{ product.stock_quantity }} in stock
@@ -107,11 +120,12 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '../common/BaseButton.vue'
 import ProductImage from '../common/ProductImage.vue'
 import { useToast } from '../../composables/useToast.js'
+import { useCurrencyStore } from '../../store/currency'
 
 export default {
   name: 'ProductCard',
@@ -129,11 +143,21 @@ export default {
   setup(props, { emit }) {
     const router = useRouter()
     const { showToast } = useToast()
+    const currencyStore = useCurrencyStore()
 
     const addingToCart = ref(false)
 
+    const currencySymbol = computed(() => {
+      return currencyStore.currentCurrency?.symbol || '$'
+    })
+
     const formatPrice = (price) => {
       return parseFloat(price).toFixed(2)
+    }
+
+    const convertedPrice = (price) => {
+      const converted = currencyStore.convertPriceLocally(price)
+      return parseFloat(converted).toFixed(2)
     }
 
     const viewProduct = () => {
@@ -162,7 +186,9 @@ export default {
 
     return {
       addingToCart,
+      currencySymbol,
       formatPrice,
+      convertedPrice,
       viewProduct,
       addToCart
     }

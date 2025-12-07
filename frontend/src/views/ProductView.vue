@@ -82,7 +82,21 @@
 
         <div class="mt-3">
           <h2 class="sr-only">Product information</h2>
-          <p class="text-2xl font-semibold text-gray-900">${{ formatPrice(product.price) }}</p>
+          <!-- Цена со скидкой -->
+          <div v-if="product.has_discount" class="space-y-2">
+            <div class="flex items-center gap-3">
+              <p class="text-2xl font-bold text-red-600">${{ formatPrice(product.discounted_price) }}</p>
+              <span class="px-3 py-1 bg-red-500 text-white text-sm font-bold rounded-full">
+                -{{ product.discount_percentage }}%
+              </span>
+            </div>
+            <p class="text-lg text-gray-500 line-through">${{ formatPrice(product.price) }}</p>
+            <p class="text-sm text-green-600 font-medium">
+              You save ${{ formatPrice(product.price - product.discounted_price) }}!
+            </p>
+          </div>
+          <!-- Обычная цена -->
+          <p v-else class="text-2xl font-semibold text-gray-900">${{ formatPrice(product.price) }}</p>
         </div>
 
         <!-- Category -->

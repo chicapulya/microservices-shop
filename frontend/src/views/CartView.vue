@@ -76,7 +76,7 @@
                       </router-link>
                     </h3>
                     <p class="mt-1 text-sm text-gray-500">
-                      ${{ formatPrice(item.price) }} each
+                      {{ currencySymbol }}{{ convertPrice(item.price) }} each
                     </p>
 
                     <!-- Stock Warning -->
@@ -190,7 +190,7 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <dt class="text-sm text-gray-600">Subtotal</dt>
-                <dd class="text-sm font-medium text-gray-900">${{ formatPrice(totalAmount) }}</dd>
+                <dd class="text-sm font-medium text-gray-900">{{ currencySymbol }}{{ convertPrice(totalAmount) }}</dd>
               </div>
 
               <div class="flex items-center justify-between">
@@ -200,12 +200,12 @@
 
               <div class="flex items-center justify-between">
                 <dt class="text-sm text-gray-600">Tax</dt>
-                <dd class="text-sm font-medium text-gray-900">${{ formatPrice(totalAmount * 0.1) }}</dd>
+                <dd class="text-sm font-medium text-gray-900">{{ currencySymbol }}{{ convertPrice(totalAmount * 0.1) }}</dd>
               </div>
 
               <div class="border-t border-gray-100 pt-4 flex items-center justify-between">
                 <dt class="text-lg font-semibold text-gray-900">Order total</dt>
-                <dd class="text-lg font-semibold text-gray-900">${{ formatPrice(totalAmount * 1.1) }}</dd>
+                <dd class="text-lg font-semibold text-gray-900">{{ currencySymbol }}{{ convertPrice(totalAmount * 1.1) }}</dd>
               </div>
             </div>
 
@@ -273,6 +273,7 @@ import ProductImage from '../components/common/ProductImage.vue'
 import CheckoutModal from '../components/checkout/CheckoutModal.vue'
 import { useCartStore } from '../store/cart.js'
 import { useAuthStore } from '../store/auth.js'
+import { useCurrencyStore } from '../store/currency.js'
 import { useToast } from '../composables/useToast.js'
 
 export default {
@@ -287,6 +288,7 @@ export default {
     const router = useRouter()
     const cartStore = useCartStore()
     const authStore = useAuthStore()
+    const currencyStore = useCurrencyStore()
     const { showSuccess, showError } = useToast()
 
     // Reactive data
@@ -302,10 +304,16 @@ export default {
     const isEmpty = computed(() => cartStore.isEmpty)
     const loading = computed(() => cartStore.loading)
     const isAuthenticated = computed(() => authStore.isAuthenticated)
+    const currencySymbol = computed(() => currencyStore.currentCurrency?.symbol || '$')
 
     // Methods
     const formatPrice = (price) => {
       return parseFloat(price).toFixed(2)
+    }
+
+    const convertPrice = (price) => {
+      const converted = currencyStore.convertPriceLocally(price)
+      return parseFloat(converted).toFixed(2)
     }
 
     const getProductForItem = (item) => {
@@ -421,9 +429,11 @@ export default {
       isEmpty,
       loading,
       isAuthenticated,
+      currencySymbol,
 
       // Methods
       formatPrice,
+      convertPrice,
       getProductForItem,
       updateQuantity,
       removeItem,

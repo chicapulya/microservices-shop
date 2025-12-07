@@ -1,6 +1,7 @@
 import redis
 import json
 import requests
+import os
 from datetime import datetime
 from typing import Dict, Any, Optional
 import logging
@@ -8,7 +9,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Redis клиент для межсервисного взаимодействия
-redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
+redis_port = int(os.environ.get('REDIS_PORT', 6379))
+redis_client = redis.Redis(host=redis_host, port=redis_port, db=0, decode_responses=True)
 
 class EventBus:
     """Простая система событий через Redis Pub/Sub"""
@@ -56,10 +59,10 @@ class ServiceCommunication:
     """Класс для HTTP взаимодействия между сервисами"""
 
     BASE_URLS = {
-        'user-service': 'http://localhost:8004',
-        'product-service': 'http://localhost:8001',
-        'cart-service': 'http://localhost:8002',
-        'order-service': 'http://localhost:8003'
+        'user-service': os.environ.get('USER_SERVICE_URL', 'http://localhost:8004'),
+        'product-service': os.environ.get('PRODUCT_SERVICE_URL', 'http://localhost:8001'),
+        'cart-service': os.environ.get('CART_SERVICE_URL', 'http://localhost:8002'),
+        'order-service': os.environ.get('ORDER_SERVICE_URL', 'http://localhost:8003')
     }
 
     @classmethod

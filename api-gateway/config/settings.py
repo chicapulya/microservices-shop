@@ -3,9 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'product-service-secret-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'product-service-secret-key-change-in-production')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'api-gateway', '*']
 
 DJANGO_APPS = [
      'django.contrib.admin',
@@ -86,11 +86,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Service URLs
 MICROSERVICES = {
-    'user-service': 'http://localhost:8004',
-    'product-service': 'http://localhost:8001',
-    'cart-service': 'http://localhost:8002',
-    'order-service': 'http://localhost:8003',
+    'user-service': os.environ.get('USER_SERVICE_URL', 'http://localhost:8004'),
+    'product-service': os.environ.get('PRODUCT_SERVICE_URL', 'http://localhost:8001'),
+    'cart-service': os.environ.get('CART_SERVICE_URL', 'http://localhost:8002'),
+    'order-service': os.environ.get('ORDER_SERVICE_URL', 'http://localhost:8003'),
+    'discount-service': os.environ.get('DISCOUNT_SERVICE_URL', 'http://localhost:8005'),
+    'currency-service': os.environ.get('CURRENCY_SERVICE_URL', 'http://localhost:8006'),
+}
+
+# Redis configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f"redis://{os.environ.get('REDIS_HOST', 'localhost')}:{os.environ.get('REDIS_PORT', '6379')}/0",
+    }
 }
 
 # Rate limiting settings
-RATE_LIMIT_REQUESTS_PER_MINUTE = 100
+RATE_LIMIT_REQUESTS_PER_MINUTE = 1000  # Увеличено для разработки
