@@ -1,10 +1,16 @@
-name: Build and Deploy
+name: Django CI
 
 on:
   push:
+<<<<<<< HEAD:.github/workflows/deploy.yml
     branches: [ docker ]
   workflow_dispatch:
 
+=======
+    branches: [ "docker" ]
+  pull_request:
+    branches: [ "docker" ]
+>>>>>>> 0e1cd3c6df8a1c25a9a6c8c49745337062690eda:.github/workflows/django.yml
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -141,6 +147,7 @@ jobs:
       if: failure()
       run: |
         docker-compose logs
+
 
     - name: Cleanup
       if: always()
