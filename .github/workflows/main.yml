@@ -1,0 +1,107 @@
+name: Docker Compose Test
+
+on:
+  push:
+    branches: [ docker ]
+  pull_request:
+    branches: [ docker ]
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  docker-compose-test:
+    name: Run Docker Compose
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create .env file
+      run: |
+        cat > .env << EOF
+        POSTGRES_USER=shop_user
+        POSTGRES_PASSWORD=shop_password
+        POSTGRES_DB=shop_db
+        SECRET_KEY=test-secret-key-for-github-actions
+        DEBUG=True
+        EOF
+
+    - name: Start database services first
+      run: |
+        docker compose up -d postgres redis
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        echo "⏳ Waiting for PostgreSQL..."
+        for i in {1..30}; do
+          docker compose exec -T postgres pg_isready -U shop_user && break
+          echo "Waiting... ($i/30)"
+          sleep 2
+        done
+
+    - name: Create databases
+      run: |
+        echo "🗄 Creating databases..."
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE user_db;"
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE product_db;"
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE cart_db;"
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE order_db;"
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE currency_db;"
+        docker compose exec -T postgres psql -U shop_user -d postgres -c "CREATE DATABASE discount_db;"
+        echo "✅ Databases created"
+
+    - name: Start all services
+      run: |
+        docker compose up -d --build
+
+    - name: Wait for services to be ready
+      run: |
+        echo "⏳ Waiting for services to start..."
+        sleep 30
+
+    - name: Check running containers
+      run: |
+        echo "📦 Running containers:"
+        docker compose ps
+        
+    - name: Check Redis
+      run: |
+        docker compose exec -T redis redis-cli ping && echo "✅ Redis is ready"
+
+    - name: Run database migrations
+      run: |
+        echo "🔄 Running migrations..."
+        docker compose exec -T user-service python manage.py migrate --noinput
+        docker compose exec -T product-service python manage.py migrate --noinput
+        docker compose exec -T cart-service python manage.py migrate --noinput
+        docker compose exec -T order-service python manage.py migrate --noinput
+        docker compose exec -T currency-service python manage.py migrate --noinput
+        docker compose exec -T discount-service python manage.py migrate --noinput
+
+    - name: Run unit tests
+      run: |
+        echo "🧪 Running tests..."
+        docker compose exec -T user-service python manage.py test apps.users.tests --verbosity=1
+        docker compose exec -T product-service python manage.py test apps.products.tests --verbosity=1
+        docker compose exec -T cart-service python manage.py test apps.cart.tests --verbosity=1
+        docker compose exec -T order-service python manage.py test apps.orders.tests --verbosity=1
+        docker compose exec -T currency-service python manage.py test apps.currency.tests --verbosity=1
+        docker compose exec -T discount-service python manage.py test apps.discounts.tests --verbosity=1
+
+    - name: Test API endpoints
+      run: |
+        echo "🌐 Testing API endpoints..."
+        curl -f http://localhost:8000/api/health/ || echo "⚠️ API Gateway health check"
+        curl -f http://localhost:8001/api/products/ || echo "⚠️ Product Service"
+        curl -f http://localhost:3000/ || echo "⚠️ Frontend"
+
+    - name: Show logs on failure
+      if: failure()
+      run: |
+        echo "📋 Service logs:"
+        docker compose logs --tail=100
+
+    - name: Cleanup
+      if: always()
+      run: |
+        docker compose down -v
