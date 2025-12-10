@@ -1,3 +1,27 @@
+<template>
+  <div class="currency-selector">
+    <label class="currency-label">
+      <span class="currency-icon">💱</span>
+      Currency:
+    </label>
+    <select 
+      v-model="selectedCurrency" 
+      class="currency-select"
+      @change="handleCurrencyChange"
+    >
+      <option 
+        v-for="currency in activeCurrencies" 
+        :key="currency.code" 
+        :value="currency.code"
+      >
+        {{ currency.symbol }} {{ currency.code }} - {{ currency.name }}
+      </option>
+    </select>
+    <span v-if="exchangeRate && selectedCurrency !== 'USD'" class="exchange-rate">
+      1 USD = {{ exchangeRate }} {{ selectedCurrency }}
+    </span>
+  </div>
+</template>
 
 <script setup>
 import { computed, onMounted } from 'vue'
@@ -21,8 +45,13 @@ const handleCurrencyChange = async () => {
 
 onMounted(async () => {
   currencyStore.loadSavedCurrency()
-  await currencyStore.fetchCurrencies()
-  await currencyStore.fetchExchangeRates()
+  // Проверяем, не загружены ли уже данные
+  if (currencyStore.currencies.length === 0) {
+    await currencyStore.fetchCurrencies()
+  }
+  if (Object.keys(currencyStore.exchangeRates).length === 0) {
+    await currencyStore.fetchExchangeRates()
+  }
 })
 </script>
 

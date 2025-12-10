@@ -80,8 +80,13 @@ const handleClickOutside = (event) => {
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
   currencyStore.loadSavedCurrency()
-  await currencyStore.fetchCurrencies()
-  await currencyStore.fetchExchangeRates()
+  // Загружаем данные только если они еще не загружены
+  if (currencyStore.currencies.length === 0) {
+    await currencyStore.fetchCurrencies()
+  }
+  if (Object.keys(currencyStore.exchangeRates).length === 0) {
+    await currencyStore.fetchExchangeRates()
+  }
 })
 
 onUnmounted(() => {

@@ -56,16 +56,26 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql' if os.environ.get('DATABASE_ENGINE') == 'postgresql' else 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('DATABASE_NAME', '/app/db/order.db'),
-        'USER': os.environ.get('DATABASE_USER', ''),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
-        'HOST': os.environ.get('DATABASE_HOST', ''),
-        'PORT': os.environ.get('DATABASE_PORT', ''),
+# Database configuration
+import dj_database_url
+
+if os.environ.get('DATABASE_URL'):
+    # Use DATABASE_URL if provided (for CI/CD)
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'), conn_max_age=600)
     }
-}
+else:
+    # Use PostgreSQL by default (for Docker Compose)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DATABASE_NAME', 'order_db'),
+            'USER': os.environ.get('DATABASE_USER', 'shop_user'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'shop_password'),
+            'HOST': os.environ.get('DATABASE_HOST', 'postgres'),
+            'PORT': os.environ.get('DATABASE_PORT', '5432'),
+        }
+    }
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [

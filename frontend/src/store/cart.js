@@ -119,6 +119,8 @@ export const useCartStore = defineStore('cart', () => {
         const itemIndex = cartItems.value.findIndex(item => item.id === itemId)
         if (itemIndex !== -1) {
           cartItems.value[itemIndex].quantity = quantity
+          // Recalculate subtotal
+          cartItems.value[itemIndex].subtotal = cartItems.value[itemIndex].price * quantity
         }
         return { success: true, data: response.data }
       }
