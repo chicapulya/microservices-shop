@@ -14,6 +14,9 @@
       </div>
     </div>
 
+    <!-- Currency Selector -->
+    <CurrencySelector />
+
     <div class="lg:grid lg:grid-cols-4 lg:gap-8">
       <!-- Filters Sidebar -->
       <div class="lg:col-span-1">
@@ -202,6 +205,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '../components/common/BaseButton.vue'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue'
 import ProductCard from '../components/product/ProductCard.vue'
+import CurrencySelector from '../components/common/CurrencySelector.vue'
 import { useProductsStore } from '../store/products.js'
 import { useCartStore } from '../store/cart.js'
 import { useAuthStore } from '../store/auth.js'
@@ -212,7 +216,8 @@ export default {
   components: {
     BaseButton,
     LoadingSpinner,
-    ProductCard
+    ProductCard,
+    CurrencySelector
   },
   setup() {
     const route = useRoute()

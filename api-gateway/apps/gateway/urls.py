@@ -16,4 +16,7 @@ urlpatterns = [
 
     # Order service routes
     re_path(r'^orders/.*', views.proxy_view, name='orders-proxy'),
+
+    # Currency service routes
+    re_path(r'^currency/.*', views.proxy_view, name='currency-proxy'),
 ]

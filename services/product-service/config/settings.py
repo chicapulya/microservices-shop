@@ -3,9 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'product-service-secret-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'product-service-secret-key-change-in-production')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'product-service', '*']
 
 DJANGO_APPS = [
      'django.contrib.admin',
@@ -57,12 +57,26 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / 'databases' / 'product.db',
+# Database configuration
+import dj_database_url
+
+if os.environ.get('DATABASE_URL'):
+    # Use DATABASE_URL if provided (for CI/CD)
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'), conn_max_age=600)
     }
-}
+else:
+    # Use PostgreSQL by default (for Docker Compose)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DATABASE_NAME', 'product_db'),
+            'USER': os.environ.get('DATABASE_USER', 'shop_user'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'shop_password'),
+            'HOST': os.environ.get('DATABASE_HOST', 'postgres'),
+            'PORT': os.environ.get('DATABASE_PORT', '5432'),
+        }
+    }
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -96,3 +110,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+# Discount Service URL
+DISCOUNT_SERVICE_URL = os.environ.get('DISCOUNT_SERVICE_URL', 'http://localhost:8005')

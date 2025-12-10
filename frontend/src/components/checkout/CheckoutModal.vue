@@ -120,7 +120,7 @@
                     </div>
                   </div>
                   <p class="text-sm font-medium text-black">
-                    ${{ formatPrice(item.subtotal) }}
+                    {{ currencySymbol }}{{ convertPrice(item.subtotal) }}
                   </p>
                 </div>
               </div>
@@ -130,7 +130,7 @@
             <div class="space-y-2">
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Subtotal</span>
-                <span class="text-black">${{ formatPrice(subtotal) }}</span>
+                <span class="text-black">{{ currencySymbol }}{{ convertPrice(subtotal) }}</span>
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Shipping</span>
@@ -138,11 +138,11 @@
               </div>
               <div class="flex justify-between text-sm">
                 <span class="text-gray-600">Tax</span>
-                <span class="text-black">${{ formatPrice(tax) }}</span>
+                <span class="text-black">{{ currencySymbol }}{{ convertPrice(tax) }}</span>
               </div>
               <div class="border-t border-gray-200 pt-2 flex justify-between text-base font-medium">
                 <span class="text-black">Total</span>
-                <span class="text-black">${{ formatPrice(totalAmount) }}</span>
+                <span class="text-black">{{ currencySymbol }}{{ convertPrice(totalAmount) }}</span>
               </div>
             </div>
           </div>
@@ -211,6 +211,7 @@ import BaseInput from '../common/BaseInput.vue'
 import BaseButton from '../common/BaseButton.vue'
 import ProductImage from '../common/ProductImage.vue'
 import { useAuthStore } from '../../store/auth'
+import { useCurrencyStore } from '../../store/currency'
 import { useToast } from '../../composables/useToast'
 import orderService from '../../services/orders'
 
@@ -234,6 +235,7 @@ export default {
   emits: ['close', 'order-placed'],
   setup(props, { emit }) {
     const authStore = useAuthStore()
+    const currencyStore = useCurrencyStore()
     const { showError } = useToast()
 
     const formData = ref({
@@ -254,9 +256,15 @@ export default {
     // Computed
     const subtotal = computed(() => props.totalAmount / 1.1) // Remove tax to get subtotal
     const tax = computed(() => subtotal.value * 0.1)
+    const currencySymbol = computed(() => currencyStore.currentCurrency?.symbol || '$')
 
     const formatPrice = (price) => {
       return parseFloat(price).toFixed(2)
+    }
+
+    const convertPrice = (price) => {
+      const converted = currencyStore.convertPriceLocally(price)
+      return parseFloat(converted).toFixed(2)
     }
 
     const getProductForItem = (item) => {
@@ -377,9 +385,11 @@ export default {
       // Computed
       subtotal,
       tax,
+      currencySymbol,
 
       // Methods
       formatPrice,
+      convertPrice,
       getProductForItem,
       validateForm,
       handleSubmit
