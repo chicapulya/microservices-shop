@@ -58,25 +58,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
-DATABASE_ENGINE = os.environ.get('DATABASE_ENGINE', 'sqlite')
+# Database configuration
+import dj_database_url
 
-if DATABASE_ENGINE == 'postgresql':
+if os.environ.get('DATABASE_URL'):
+    # Use DATABASE_URL if provided (for CI/CD)
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'), conn_max_age=600)
+    }
+else:
+    # Use PostgreSQL by default (for Docker Compose)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('DATABASE_NAME', 'currency_db'),
             'USER': os.environ.get('DATABASE_USER', 'shop_user'),
             'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'shop_password'),
-            'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+            'HOST': os.environ.get('DATABASE_HOST', 'postgres'),
             'PORT': os.environ.get('DATABASE_PORT', '5432'),
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

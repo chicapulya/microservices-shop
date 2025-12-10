@@ -48,7 +48,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DJANGO_SETTINGS_MODULE=config.settings
-      - DATABASE_ENGINE=postgresql
       - DATABASE_NAME=user_db
       - DATABASE_USER=shop_user
       - DATABASE_PASSWORD=shop_password
@@ -222,7 +221,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DJANGO_SETTINGS_MODULE=config.settings
-      - DATABASE_ENGINE=postgresql
       - DATABASE_NAME=currency_db
       - DATABASE_USER=shop_user
       - DATABASE_PASSWORD=shop_password

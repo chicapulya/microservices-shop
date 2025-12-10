@@ -50,6 +50,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/discount-service
@@ -69,7 +70,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.discounts.tests --verbosity=2
 
   test-user-service:
     name: Test User Service
@@ -114,6 +115,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/user-service
@@ -133,7 +135,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.users.tests --verbosity=2
 
   test-product-service:
     name: Test Product Service
@@ -178,6 +180,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/product-service
@@ -197,7 +200,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.products.tests --verbosity=2
 
   test-cart-service:
     name: Test Cart Service
@@ -242,6 +245,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/cart-service
@@ -261,7 +265,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.cart.tests --verbosity=2
 
   test-order-service:
     name: Test Order Service
@@ -306,6 +310,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/order-service
@@ -325,7 +330,7 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.orders.tests --verbosity=2
 
   test-currency-service:
     name: Test Currency Service
@@ -370,6 +375,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install psycopg2-binary
     
     - name: Run migrations
       working-directory: ./services/currency-service
@@ -389,4 +395,4 @@ jobs:
         SECRET_KEY: test-secret-key-for-ci
         DEBUG: 'True'
       run: |
-        python manage.py test
+        python manage.py test apps.currency.tests --verbosity=2

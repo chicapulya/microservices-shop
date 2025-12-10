@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from datetime import datetime
+from django.utils import timezone
 from decimal import Decimal
 
 
@@ -47,7 +47,7 @@ class Holiday(models.Model):
     
     def is_currently_active(self):
         """Проверка активности праздника на данный момент"""
-        now = datetime.now()
+        now = timezone.now()
         return (
             self.is_active and 
             self.start_date <= now <= self.end_date
@@ -132,7 +132,7 @@ class DiscountCode(models.Model):
     
     def is_valid(self):
         """Проверка валидности промокода"""
-        now = datetime.now()
+        now = timezone.now()
         if not self.is_active:
             return False
         if not (self.valid_from <= now <= self.valid_to):
