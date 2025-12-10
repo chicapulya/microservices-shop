@@ -1,0 +1,392 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-discount-service:
+    name: Test Discount Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_discount_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/discount-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/discount-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_discount_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/discount-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_discount_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
+
+  test-user-service:
+    name: Test User Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_user_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/user-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/user-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_user_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/user-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_user_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
+
+  test-product-service:
+    name: Test Product Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_product_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/product-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/product-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_product_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/product-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_product_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
+
+  test-cart-service:
+    name: Test Cart Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_cart_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/cart-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/cart-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_cart_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/cart-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_cart_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
+
+  test-order-service:
+    name: Test Order Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine  
+        env:
+          POSTGRES_DB: test_order_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/order-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/order-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_order_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/order-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_order_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
+
+  test-currency-service:
+    name: Test Currency Service
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test_currency_db
+          POSTGRES_USER: shop_user
+          POSTGRES_PASSWORD: shop_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      working-directory: ./services/currency-service
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run migrations
+      working-directory: ./services/currency-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_currency_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py migrate
+    
+    - name: Run tests
+      working-directory: ./services/currency-service
+      env:
+        DATABASE_URL: postgresql://shop_user:shop_password@localhost:5432/test_currency_db
+        REDIS_URL: redis://localhost:6379/0
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'True'
+      run: |
+        python manage.py test
